@@ -27,3 +27,6 @@ Gemfile.lock
 /home/.jekyll-cache/
 /home/.jekyll-metadata
 /home/Gemfile.lock
+
+# DS_Store
+.DS_Store
