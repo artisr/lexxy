@@ -1,7 +1,7 @@
 require_relative "lib/lexxy/version"
 
 Gem::Specification.new do |spec|
-  spec.name        = "lexxy"
+  spec.name        = "altexxy"
   spec.version     = Lexxy::VERSION
   spec.authors     = [ "Jorge Manrubia" ]
   spec.email       = [ "jorge@37signals.com" ]
