@@ -233,9 +233,12 @@ export class LexicalToolbarElement extends HTMLElement {
 
     this.#setButtonPressed("format", isInHeading)
     this.#setButtonPressed("paragraph", !isInHeading)
-    this.#setButtonPressed("heading-large", headingTag === "h2")
-    this.#setButtonPressed("heading-medium", headingTag === "h3")
-    this.#setButtonPressed("heading-small", headingTag === "h4")
+    this.#setButtonPressed("heading-1", headingTag === "h1")
+    this.#setButtonPressed("heading-2", headingTag === "h2")
+    this.#setButtonPressed("heading-3", headingTag === "h3")
+    this.#setButtonPressed("heading-4", headingTag === "h4")
+    this.#setButtonPressed("heading-5", headingTag === "h5")
+    this.#setButtonPressed("heading-6", headingTag === "h6")
 
     this.#setButtonPressed("lists", isInList)
     this.#setButtonPressed("unordered-list", isInList && listType === "bullet")
@@ -422,14 +425,23 @@ export class LexicalToolbarElement extends HTMLElement {
           <button type="button" name="paragraph" data-command="setFormatParagraph" title="Paragraph" role="menuitem">
             ${ToolbarIcons.paragraph} <span>Normal</span>
           </button>
-          <button type="button" name="heading-large" data-command="setFormatHeadingLarge" title="Large heading" role="menuitem">
-            ${ToolbarIcons.h2} <span>Large Heading</span>
+          <button type="button" name="heading-1" data-command="setFormatHeading1" title="Heading 1" role="menuitem">
+            ${ToolbarIcons.h1} <span>Heading 1</span>
           </button>
-          <button type="button" name="heading-medium" data-command="setFormatHeadingMedium" title="Medium heading" role="menuitem">
-            ${ToolbarIcons.h3} <span>Medium Heading</span>
+          <button type="button" name="heading-2" data-command="setFormatHeading2" title="Heading 2" role="menuitem">
+            ${ToolbarIcons.h2} <span>Heading 2</span>
           </button>
-          <button class="lexxy-editor__toolbar-group-end" type="button" name="heading-small" data-command="setFormatHeadingSmall" title="Small heading" role="menuitem">
-            ${ToolbarIcons.h4} <span>Small Heading</span>
+          <button type="button" name="heading-3" data-command="setFormatHeading3" title="Heading 3" role="menuitem">
+            ${ToolbarIcons.h3} <span>Heading 3</span>
+          </button>
+          <button type="button" name="heading-4" data-command="setFormatHeading4" title="Heading 4" role="menuitem">
+            ${ToolbarIcons.h4} <span>Heading 4</span>
+          </button>
+          <button type="button" name="heading-5" data-command="setFormatHeading5" title="Heading 5" role="menuitem">
+            ${ToolbarIcons.h5} <span>Heading 5</span>
+          </button>
+          <button class="lexxy-editor__toolbar-group-end" type="button" name="heading-6" data-command="setFormatHeading6" title="Heading 6" role="menuitem">
+            ${ToolbarIcons.h6} <span>Heading 6</span>
           </button>
           <div class="lexxy-editor__toolbar-separator" role="separator"></div>
           <button type="button" name="clear-formatting" data-command="clearFormatting" title="Clear formatting" role="menuitem">

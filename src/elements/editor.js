@@ -863,9 +863,12 @@ export class LexicalEditorElement extends HTMLElement {
 
     return [
       { label: "Normal", command: "setFormatParagraph", tag: null },
-      { label: "Large heading", command: "setFormatHeadingLarge", tag: "h2" },
-      { label: "Medium heading", command: "setFormatHeadingMedium", tag: "h3" },
-      { label: "Small heading", command: "setFormatHeadingSmall", tag: "h4" },
+      { label: "Heading 1", command: "setFormatHeading1", tag: "h1" },
+      { label: "Heading 2", command: "setFormatHeading2", tag: "h2" },
+      { label: "Heading 3", command: "setFormatHeading3", tag: "h3" },
+      { label: "Heading 4", command: "setFormatHeading4", tag: "h4" },
+      { label: "Heading 5", command: "setFormatHeading5", tag: "h5" },
+      { label: "Heading 6", command: "setFormatHeading6", tag: "h6" },
     ]
   }
 

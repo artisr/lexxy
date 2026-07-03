@@ -38,6 +38,12 @@ const COMMANDS = [
   "toggleHighlight",
   "removeHighlight",
   "setFontSize",
+  "setFormatHeading1",
+  "setFormatHeading2",
+  "setFormatHeading3",
+  "setFormatHeading4",
+  "setFormatHeading5",
+  "setFormatHeading6",
   "setFormatHeadingLarge",
   "setFormatHeadingMedium",
   "setFormatHeadingSmall",
@@ -288,16 +294,40 @@ export class CommandDispatcher {
     $insertNodeToNearestRoot(new HorizontalDividerNode)
   }
 
-  dispatchSetFormatHeadingLarge() {
+  dispatchSetFormatHeading1() {
+    this.contents.applyHeadingFormat("h1")
+  }
+
+  dispatchSetFormatHeading2() {
     this.contents.applyHeadingFormat("h2")
   }
 
-  dispatchSetFormatHeadingMedium() {
+  dispatchSetFormatHeading3() {
     this.contents.applyHeadingFormat("h3")
   }
 
-  dispatchSetFormatHeadingSmall() {
+  dispatchSetFormatHeading4() {
     this.contents.applyHeadingFormat("h4")
+  }
+
+  dispatchSetFormatHeading5() {
+    this.contents.applyHeadingFormat("h5")
+  }
+
+  dispatchSetFormatHeading6() {
+    this.contents.applyHeadingFormat("h6")
+  }
+
+  dispatchSetFormatHeadingLarge() {
+    this.dispatchSetFormatHeading2()
+  }
+
+  dispatchSetFormatHeadingMedium() {
+    this.dispatchSetFormatHeading3()
+  }
+
+  dispatchSetFormatHeadingSmall() {
+    this.dispatchSetFormatHeading4()
   }
 
   dispatchSetFormatParagraph() {

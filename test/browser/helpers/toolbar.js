@@ -9,8 +9,14 @@ export async function openToolbarDropdown(page, name) {
 }
 
 const FORMAT_DROPDOWN_COMMANDS = new Set([
-  "setFormatParagraph", "setFormatHeadingLarge", "setFormatHeadingMedium",
-  "setFormatHeadingSmall", "clearFormatting"
+  "setFormatParagraph",
+  "setFormatHeading1",
+  "setFormatHeading2",
+  "setFormatHeading3",
+  "setFormatHeading4",
+  "setFormatHeading5",
+  "setFormatHeading6",
+  "clearFormatting"
 ])
 
 export async function clickToolbarButton(page, command) {

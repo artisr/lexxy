@@ -211,6 +211,27 @@ test.describe("Toolbar", () => {
     await page.setViewportSize(originalSize)
   })
 
+  test("format dropdown keeps heading labels while toolbar overflows", async ({ page }) => {
+    const toolbar = page.locator("lexxy-toolbar")
+    const originalSize = page.viewportSize()
+
+    await page.setViewportSize({ width: 300, height: originalSize.height })
+    await expect(toolbar).toHaveAttribute("overflowing", "")
+
+    await toolbar.getByLabel("Show more toolbar buttons").click()
+    await toolbar.locator("button[name='format']").evaluate((button) => {
+      button.closest("lexxy-toolbar-dropdown").querySelector("[data-dropdown-panel]").hidden = false
+    })
+
+    const formatMenu = toolbar.locator(".lexxy-editor__toolbar-dropdown-list")
+    await expect(formatMenu.locator("button[name='heading-1'] span")).toHaveText("Heading 1")
+    await expect(formatMenu.locator("button[name='heading-1'] span")).toBeVisible()
+    await expect(formatMenu.locator("button[name='heading-2'] span")).toHaveText("Heading 2")
+    await expect(formatMenu.locator("button[name='heading-2'] span")).toBeVisible()
+
+    await page.setViewportSize(originalSize)
+  })
+
   test("image button opens file picker restricted to images and videos", async ({ page }) => {
     const [fileChooser] = await Promise.all([
       page.waitForEvent("filechooser"),

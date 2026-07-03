@@ -663,14 +663,7 @@
     }
 
     [overflowing] & {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-
-      button span { display: none; }
-
-      .lexxy-editor__toolbar-separator {
-        grid-column: 1 / -1;
-      }
+      border-start-start-radius: calc(var(--lexxy-radius) + var(--lexxy-toolbar-gap));
     }
   }
 
@@ -778,7 +771,7 @@
     justify-self: flex-end;
     z-index: 1;
 
-    [data-dropdown-panel] {
+    > [data-dropdown-panel] {
       border-start-end-radius: 0;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
