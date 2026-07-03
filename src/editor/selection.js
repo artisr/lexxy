@@ -103,7 +103,7 @@ export default class Selection {
       isStrikethrough: selection.hasFormat("strikethrough"),
       isUnderline: selection.hasFormat("underline"),
       isHighlight: isSelectionHighlighted(selection),
-      isInLink: $getNearestNodeOfType(anchorNode, LinkNode) !== null,
+      isInLink: this.#getSelectedLinkNode(selection) !== null,
       isInQuote: $isQuoteNode(topLevelElement),
       isInHeading: headingNode !== null,
       isInCode: this.#isInCode(selection, anchorNode),
@@ -280,6 +280,20 @@ export default class Selection {
     if (!selection.hasFormat("code")) return false
 
     return $isTextNode(anchorNode) && anchorNode.hasFormat("code")
+  }
+
+  #getSelectedLinkNode(selection) {
+    if (selection.isCollapsed()) {
+      return $getNearestNodeOfType(selection.anchor.getNode(), LinkNode)
+    }
+
+    const linkNodes = new Set()
+    for (const node of selection.getNodes()) {
+      if (!$isTextNode(node)) continue
+      linkNodes.add($getNearestNodeOfType(node, LinkNode))
+    }
+
+    return linkNodes.size === 1 ? Array.from(linkNodes)[0] : null
   }
 
   // After deleting all inline code text, Lexical preserves the code format on

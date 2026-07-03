@@ -10,6 +10,7 @@ import { mergeRegister } from "@lexical/utils"
 
 export const TOGGLE_HIGHLIGHT_COMMAND = createCommand()
 export const REMOVE_HIGHLIGHT_COMMAND = createCommand()
+export const SET_FONT_SIZE_COMMAND = createCommand()
 export const BLANK_STYLES = { "color": null, "background-color": null }
 
 const hasPastedStylesState = createState("hasPastedStyles", {
@@ -52,6 +53,7 @@ export class HighlightExtension extends LexxyExtension {
         return mergeRegister(
           editor.registerCommand(TOGGLE_HIGHLIGHT_COMMAND, (styles) => $toggleSelectionStyles(editor, styles), COMMAND_PRIORITY_NORMAL),
           editor.registerCommand(REMOVE_HIGHLIGHT_COMMAND, () => $toggleSelectionStyles(editor, BLANK_STYLES), COMMAND_PRIORITY_NORMAL),
+          editor.registerCommand(SET_FONT_SIZE_COMMAND, (fontSize) => $setSelectionStyles(editor, { "font-size": fontSize || null }), COMMAND_PRIORITY_NORMAL),
           editor.registerNodeTransform(TextNode, $syncHighlightWithStyle),
           editor.registerNodeTransform(CodeHighlightNode, $syncHighlightWithCodeHighlightNode),
           editor.registerNodeTransform(TextNode, (textNode) => $canonicalizePastedStyles(textNode, canonicalizers)),
@@ -69,7 +71,8 @@ export class HighlightExtension extends LexxyExtension {
 export function $applyHighlightStyle(textNode, element) {
   const elementStyles = {
     color: element.style?.color,
-    "background-color": element.style?.backgroundColor
+    "background-color": element.style?.backgroundColor,
+    "font-size": element.style?.fontSize
   }
 
   if ($hasUpdateTag(PASTE_TAG)) { $setPastedStyles(textNode) }
@@ -177,6 +180,7 @@ function extractHighlightStyleFromElement(element) {
   const styles = {}
   if (element.style?.color) styles.color = element.style.color
   if (element.style?.backgroundColor) styles["background-color"] = element.style.backgroundColor
+  if (element.style?.fontSize) styles["font-size"] = element.style.fontSize
   const css = getCSSFromStyleObject(styles)
   return css.length > 0 ? css : null
 }
@@ -313,19 +317,43 @@ function $extractHighlightRangesFromCodeNode(codeNode) {
 function buildCanonicalizers(config) {
   return [
     new StyleCanonicalizer("color", [ ...config.buttons.color, ...config.permit.color ]),
-    new StyleCanonicalizer("background-color", [ ...config.buttons["background-color"], ...config.permit["background-color"] ])
+    new StyleCanonicalizer("background-color", [ ...config.buttons["background-color"], ...config.permit["background-color"] ]),
+    ...buildOptionalCanonicalizers("font-size", config)
   ]
 }
 
+function buildOptionalCanonicalizers(property, config) {
+  const allowedValues = [ ...(config.buttons[property] || []), ...(config.permit[property] || []) ]
+  return allowedValues.length ? [ new StyleCanonicalizer(property, allowedValues) ] : []
+}
+
 function $toggleSelectionStyles(editor, styles) {
+  const patch = $buildToggledStylePatch(styles)
+  $patchSelectionStyles(editor, patch)
+}
+
+function $setSelectionStyles(editor, styles) {
+  $patchSelectionStyles(editor, styles)
+}
+
+function $buildToggledStylePatch(styles) {
   const selection = $getSelection()
-  if (!$isRangeSelection(selection)) return
+  if (!$isRangeSelection(selection)) return null
 
   const patch = {}
   for (const property in styles) {
     const oldValue = $getSelectionStyleValueForProperty(selection, property)
     patch[property] = toggleOrReplace(oldValue, styles[property])
   }
+
+  return patch
+}
+
+function $patchSelectionStyles(editor, patch) {
+  if (!patch) return
+
+  const selection = $getSelection()
+  if (!$isRangeSelection(selection)) return
 
   if ($selectionIsInCodeBlock(selection)) {
     $patchCodeHighlightStyles(editor, selection, patch)

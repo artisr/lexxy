@@ -1,7 +1,17 @@
 import { test } from "../../test_helper.js"
 import { expect } from "@playwright/test"
-import { assertEditorHtml } from "../../helpers/assertions.js"
+import { assertEditorHtml, startMonitoringConsole } from "../../helpers/assertions.js"
 import { HELLO_EVERYONE } from "../../helpers/toolbar.js"
+
+test.describe("Toolbar initialization", () => {
+  test("initializes without page errors while dropdowns wait for the editor", async ({ page }) => {
+    startMonitoringConsole(page)
+
+    await page.goto("/")
+    await expect(page.locator("lexxy-editor")).toHaveAttribute("connected", "", { timeout: 5_000 })
+    expect(page).toHaveNoErrors()
+  })
+})
 
 test.describe("Toolbar", () => {
   test.beforeEach(async ({ page }) => {

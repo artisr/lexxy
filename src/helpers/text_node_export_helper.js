@@ -9,8 +9,8 @@
 // already present, while preserving <s> and <u> wrappers which have no semantic equivalents
 // in createDOM's output.
 //
-// Any <span> elements produced by createDOM() are unwrapped, since they only carry
-// editor classes that aren't meaningful in exported HTML.
+// Any style-less <span> elements produced by createDOM() are unwrapped, since
+// they only carry editor classes that aren't meaningful in exported HTML.
 
 export function exportTextNodeDOM(editor, textNode) {
   const element = textNode.createDOM(editor._config, editor)
@@ -56,11 +56,20 @@ function wrapWith(element, tag) {
 }
 
 function unwrapSpans(element) {
-  if (element.tagName === "SPAN") return element.firstChild
+  if (isDisposableSpan(element)) return element.firstChild
 
   for (const span of element.querySelectorAll("span")) {
-    span.replaceWith(...span.childNodes)
+    if (isDisposableSpan(span)) {
+      span.replaceWith(...span.childNodes)
+    }
   }
 
   return element
+}
+
+function isDisposableSpan(element) {
+  return element.tagName === "SPAN" &&
+    !element.style.color &&
+    !element.style.backgroundColor &&
+    !element.style.fontSize
 }

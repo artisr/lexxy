@@ -1,34 +1,70 @@
 import { $isRangeSelection, $isTextNode } from "lexical"
-import { getCSSFromStyleObject, getStyleObjectFromCSS } from "@lexical/selection"
+import { $getSelectionStyleValueForProperty, getCSSFromStyleObject, getStyleObjectFromCSS } from "@lexical/selection"
 import { createElement } from "./html_helper"
 import { styleResolverRoot } from "./style_resolver_root"
 
 export function isSelectionHighlighted(selection) {
   if (!$isRangeSelection(selection)) return false
 
-  if (selection.isCollapsed()) {
-    return hasHighlightStyles(selection.style)
-  } else {
-    return selection.hasFormat("highlight")
-  }
+  return getHighlightStyles(selection) !== null
 }
 
 export function getHighlightStyles(selection) {
   if (!$isRangeSelection(selection)) return null
 
   let styles = getStyleObjectFromCSS(selection.style)
-  if (!styles.color && !styles["background-color"]) {
+  if (selection.isCollapsed()) {
     const anchorNode = selection.anchor.getNode()
     if ($isTextNode(anchorNode)) {
       styles = getStyleObjectFromCSS(anchorNode.getStyle())
+      if (styles.color || styles["background-color"] || anchorNode.getTextContentSize() > 0) {
+        return styles.color || styles["background-color"]
+          ? { color: styles.color || null, backgroundColor: styles["background-color"] || null }
+          : null
+      }
     }
   }
 
-  const color = styles.color || null
-  const backgroundColor = styles["background-color"] || null
+  const color = selection.isCollapsed()
+    ? styles.color || null
+    : getUniformSelectedTextStyle(selection, "color")
+  const backgroundColor = selection.isCollapsed()
+    ? styles["background-color"] || null
+    : getUniformSelectedTextStyle(selection, "background-color")
   if (!color && !backgroundColor) return null
 
   return { color, backgroundColor }
+}
+
+export function getSelectionStyle(selection, property) {
+  if (!$isRangeSelection(selection)) return null
+
+  if (selection.isCollapsed()) {
+    const anchorNode = selection.anchor.getNode()
+    if ($isTextNode(anchorNode)) {
+      const value = getStyleObjectFromCSS(anchorNode.getStyle())[property]
+      if (value) return value
+      if (anchorNode.getTextContentSize() > 0) return null
+    }
+
+    return $getSelectionStyleValueForProperty(selection, property, null)
+  }
+
+  return getUniformSelectedTextStyle(selection, property)
+}
+
+function getUniformSelectedTextStyle(selection, property) {
+  const values = new Set()
+
+  selection.getNodes().forEach(node => {
+    if ($isTextNode(node)) {
+      const value = getStyleObjectFromCSS(node.getStyle())[property]
+      values.add(value || null)
+    }
+  })
+
+  values.delete(undefined)
+  return values.size === 1 ? Array.from(values)[0] : null
 }
 
 export function hasHighlightStyles(cssOrStyles) {

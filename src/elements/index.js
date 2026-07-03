@@ -1,5 +1,8 @@
 import Toolbar from "./toolbar"
 import ToolbarDropdown from "./toolbar_dropdown"
+import FontSizeDropdown from "./dropdown/font_size"
+import StyleDropdown from "./dropdown/style"
+import CustomLinkDropdown from "./dropdown/custom_link"
 import HighlightDropdown from "./dropdown/highlight"
 import LinkDropdown from "./dropdown/link"
 import Editor from "./editor"
@@ -13,6 +16,9 @@ export function defineElements() {
     // Toolbar must be registered BEFORE Editor
     "lexxy-toolbar": Toolbar,
     "lexxy-toolbar-dropdown": ToolbarDropdown,
+    "lexxy-font-size-dropdown": FontSizeDropdown,
+    "lexxy-style-dropdown": StyleDropdown,
+    "lexxy-custom-link-dropdown": CustomLinkDropdown,
     "lexxy-highlight-dropdown": HighlightDropdown,
     "lexxy-link-dropdown": LinkDropdown,
 

@@ -25,7 +25,8 @@ import { createElement } from "../helpers/html_helper"
 import { ListenerBin, registerEventListener } from "../helpers/listener_helper"
 import { $normalizeBlockContainerSelection, getListType } from "../helpers/lexical_helper"
 import { HorizontalDividerNode } from "../nodes/horizontal_divider_node"
-import { REMOVE_HIGHLIGHT_COMMAND, TOGGLE_HIGHLIGHT_COMMAND } from "../extensions/highlight_extension"
+import { $createClassableLinkNode, ClassableLinkNode } from "../nodes/classable_link_node"
+import { REMOVE_HIGHLIGHT_COMMAND, SET_FONT_SIZE_COMMAND, TOGGLE_HIGHLIGHT_COMMAND } from "../extensions/highlight_extension"
 
 const COMMANDS = [
   "bold",
@@ -36,6 +37,7 @@ const COMMANDS = [
   "unlink",
   "toggleHighlight",
   "removeHighlight",
+  "setFontSize",
   "setFormatHeadingLarge",
   "setFormatHeadingMedium",
   "setFormatHeadingSmall",
@@ -99,22 +101,77 @@ export class CommandDispatcher {
     this.editor.dispatchCommand(REMOVE_HIGHLIGHT_COMMAND)
   }
 
-  dispatchLink(url) {
+  dispatchSetFontSize(fontSize) {
+    this.editor.dispatchCommand(SET_FONT_SIZE_COMMAND, fontSize)
+  }
+
+  dispatchLink(payload) {
     this.editor.update(() => {
       const selection = $getSelection()
       if (!$isRangeSelection(selection)) return
 
+      const { url, className } = this.#normalizeLinkPayload(payload)
       const anchorNode = selection.anchor.getNode()
 
       if (selection.isCollapsed() && !$getNearestNodeOfType(anchorNode, LinkNode)) {
-        const autoLinkNode = $createAutoLinkNode(url)
+        const linkNode = className
+          ? $createClassableLinkNode(url, { className })
+          : $createAutoLinkNode(url)
         const textNode = $createTextNode(url)
-        autoLinkNode.append(textNode)
-        selection.insertNodes([ autoLinkNode ])
+        linkNode.append(textNode)
+        selection.insertNodes([ linkNode ])
       } else {
         $toggleLink(url)
+        this.#setSelectionLinkClassName(className)
       }
     })
+  }
+
+  #normalizeLinkPayload(payload) {
+    if (typeof payload === "object" && payload !== null) {
+      return {
+        url: payload.url || payload.href,
+        className: payload.className ?? payload.class ?? null
+      }
+    }
+
+    return { url: payload, className: null }
+  }
+
+  #setSelectionLinkClassName(className) {
+    const selection = $getSelection()
+    if (!$isRangeSelection(selection)) return
+
+    const links = new Set()
+    selection.getNodes().forEach(node => {
+      const linkNode = node instanceof ClassableLinkNode
+        ? node
+        : $getNearestNodeOfType(node, LinkNode)
+
+      if (linkNode) links.add(linkNode)
+    })
+
+    links.forEach(linkNode => this.#setLinkClassName(linkNode, className))
+  }
+
+  #setLinkClassName(linkNode, className) {
+    if (linkNode.setClassName) {
+      linkNode.setClassName(className)
+      return
+    }
+
+    if (!className) return
+
+    const classableLinkNode = $createClassableLinkNode(linkNode.getURL(), {
+      className,
+      rel: linkNode.getRel(),
+      target: linkNode.getTarget(),
+      title: linkNode.getTitle()
+    })
+
+    linkNode.insertBefore(classableLinkNode)
+    classableLinkNode.append(...linkNode.getChildren())
+    linkNode.remove()
   }
 
   dispatchUnlink() {

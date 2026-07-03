@@ -8,7 +8,7 @@ class CodeHighlightingTest < ApplicationSystemTestCase
   test "ruby code is highlighted in editor and after saving" do
     find_editor.send "def hello_world"
     find_editor.select("dev")
-    click_on "Code"
+    find_editor.toggle_command("insertCodeBlock")
     assert_equal "plain", find("select[name=lexxy-code-language]").value
 
     select "Ruby", from: "lexxy-code-language"
@@ -24,7 +24,7 @@ class CodeHighlightingTest < ApplicationSystemTestCase
   test "color highlights inside code blocks are preserved in rendered view" do
     find_editor.send "def hello_world"
     find_editor.select("dev")
-    click_on "Code"
+    find_editor.toggle_command("insertCodeBlock")
     select "Ruby", from: "lexxy-code-language"
 
     # Apply a background highlight to "hello"

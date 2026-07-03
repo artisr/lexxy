@@ -16,6 +16,7 @@ export class LexicalToolbarElement extends HTMLElement {
   static observedAttributes = [ "connected" ]
   #listeners = new ListenerBin()
   #refreshToolbarAF = null
+  #customLinkActive = false
 
   constructor() {
     super()
@@ -241,11 +242,19 @@ export class LexicalToolbarElement extends HTMLElement {
     this.#setButtonPressed("ordered-list", isInList && listType === "number")
 
     this.#setButtonPressed("highlight", isHighlight)
-    this.#setButtonPressed("link", isInLink)
+    this.#syncSelectionDropdowns(selection)
+    this.#setButtonPressed("link", this.#customLinkActive ? false : isInLink)
     this.#setButtonPressed("quote", isInQuote)
     this.#setButtonPressed("code", isInCode)
 
     this.#setButtonPressed("table", isInTable)
+  }
+
+  #syncSelectionDropdowns(selection) {
+    this.querySelector("lexxy-font-size-dropdown")?.syncSelection(selection)
+    this.querySelectorAll("lexxy-style-dropdown").forEach((dropdown) => dropdown.syncSelection(selection))
+
+    this.#customLinkActive = this.querySelector("lexxy-custom-link-dropdown")?.syncSelection(selection) || false
   }
 
   #setButtonPressed(name, isPressed) {
@@ -330,19 +339,19 @@ export class LexicalToolbarElement extends HTMLElement {
   }
 
   #reclaimWidth(overflowWidth, { gap }) {
-    const buttons = this.#overflowableButtons
-    const overflowButtons = []
+    const items = this.#overflowableItems
+    const overflowItems = []
     let recoveredWidth = 0
 
-    while (recoveredWidth < overflowWidth && buttons.length) {
-      const button = buttons.pop()
+    while (recoveredWidth < overflowWidth && items.length) {
+      const item = items.pop()
 
-      overflowButtons.push(button)
-      button.role = "menuitem"
-      recoveredWidth += button.offsetWidth + gap
+      overflowItems.push(item)
+      item.role = "menuitem"
+      recoveredWidth += item.offsetWidth + gap
     }
 
-    this.#overflowMenuDropdown.append(...overflowButtons.reverse())
+    this.#overflowMenuDropdown.append(...overflowItems.reverse())
   }
 
   #setOverflowMenuNonce() {
@@ -365,8 +374,8 @@ export class LexicalToolbarElement extends HTMLElement {
     return this.#overflowMenuButton?.querySelector(":scope > [data-dropdown-panel]")
   }
 
-  get #overflowableButtons() {
-    return Array.from(this.querySelectorAll(":scope > button:not([data-prevent-overflow])"))
+  get #overflowableItems() {
+    return Array.from(this.querySelectorAll(":scope > :not(.lexxy-editor__toolbar-overflow):not([data-prevent-overflow])"))
   }
 
   get #buttons() {
@@ -429,6 +438,51 @@ export class LexicalToolbarElement extends HTMLElement {
         </div>
       </lexxy-toolbar-dropdown>
 
+      <lexxy-font-size-dropdown class="lexxy-editor__toolbar-dropdown lexxy-editor__toolbar-dropdown--input">
+        <button data-dropdown-trigger class="lexxy-editor__toolbar-button lexxy-editor__toolbar-button--chevron" type="button" name="font-size" title="Font size" aria-haspopup="dialog" aria-expanded="false">
+          <span class="lexxy-editor__toolbar-text-icon">T</span>
+        </button>
+        <div data-dropdown-panel role="dialog" aria-label="Font size" class="lexxy-editor__toolbar-input-panel" hidden>
+          <input data-font-size-input type="text" placeholder="14px" class="input" aria-label="Font size">
+          <div class="lexxy-editor__toolbar-dropdown-actions">
+            <button data-font-size-apply type="button" class="lexxy-editor__toolbar-button">Apply</button>
+            <button data-font-size-clear type="button" class="lexxy-editor__toolbar-button">Clear</button>
+          </div>
+        </div>
+      </lexxy-font-size-dropdown>
+
+      <lexxy-style-dropdown class="lexxy-editor__toolbar-dropdown lexxy-editor__toolbar-dropdown--style" data-style-control="color" data-style-default="#000000">
+        <button data-dropdown-trigger class="lexxy-editor__toolbar-button lexxy-editor__toolbar-button--chevron" type="button" name="font-color" title="Font color" aria-haspopup="dialog" aria-expanded="false">
+          <span class="lexxy-editor__toolbar-text-icon">A</span>
+        </button>
+        <div data-dropdown-panel role="dialog" aria-label="Font color" class="lexxy-editor__toolbar-style-panel" hidden>
+          <div class="lexxy-editor__toolbar-color-field">
+            <input data-style-color-picker="color" type="color" value="#000000" aria-label="Font color picker">
+            <input data-style-value="color" type="text" placeholder="#212529 or rgb(33, 37, 41)" class="input" aria-label="Font color value">
+          </div>
+          <div class="lexxy-editor__toolbar-dropdown-actions">
+            <button data-style-apply="color" type="button" class="lexxy-editor__toolbar-button">Apply</button>
+            <button data-style-clear="color" type="button" class="lexxy-editor__toolbar-button">Clear</button>
+          </div>
+        </div>
+      </lexxy-style-dropdown>
+
+      <lexxy-style-dropdown class="lexxy-editor__toolbar-dropdown lexxy-editor__toolbar-dropdown--style" data-style-control="background-color" data-style-default="#ffff00">
+        <button data-dropdown-trigger class="lexxy-editor__toolbar-button lexxy-editor__toolbar-button--chevron" type="button" name="highlight-color" title="Highlight color" aria-haspopup="dialog" aria-expanded="false">
+          <span class="lexxy-editor__toolbar-text-icon">H</span>
+        </button>
+        <div data-dropdown-panel role="dialog" aria-label="Highlight color" class="lexxy-editor__toolbar-style-panel" hidden>
+          <div class="lexxy-editor__toolbar-color-field">
+            <input data-style-color-picker="background-color" type="color" value="#ffff00" aria-label="Highlight color picker">
+            <input data-style-value="background-color" type="text" placeholder="#fff2a8 or rgb(255, 242, 168)" class="input" aria-label="Highlight color value">
+          </div>
+          <div class="lexxy-editor__toolbar-dropdown-actions">
+            <button data-style-apply="background-color" type="button" class="lexxy-editor__toolbar-button">Apply</button>
+            <button data-style-clear="background-color" type="button" class="lexxy-editor__toolbar-button">Clear</button>
+          </div>
+        </div>
+      </lexxy-style-dropdown>
+
       <lexxy-highlight-dropdown class="lexxy-editor__toolbar-dropdown lexxy-editor__toolbar-dropdown--highlight">
         <button data-dropdown-trigger class="lexxy-editor__toolbar-button lexxy-editor__toolbar-button--chevron" type="button" name="highlight" title="Color highlight" aria-haspopup="menu" aria-expanded="false">
           ${ToolbarIcons.highlight}
@@ -451,6 +505,20 @@ export class LexicalToolbarElement extends HTMLElement {
           </div>
         </div>
       </lexxy-link-dropdown>
+
+      <lexxy-custom-link-dropdown class="lexxy-editor__toolbar-dropdown lexxy-editor__toolbar-dropdown--input">
+        <button data-dropdown-trigger class="lexxy-editor__toolbar-button lexxy-editor__toolbar-button--chevron lexxy-editor__toolbar-group-end" type="button" name="custom-button-link" title="Custom button link" aria-haspopup="dialog" aria-expanded="false">
+          <span class="lexxy-editor__toolbar-text-icon">Btn</span>
+        </button>
+        <div data-dropdown-panel role="dialog" aria-label="Custom button link" class="lexxy-editor__toolbar-input-panel lexxy-editor__toolbar-input-panel--wide" hidden>
+          <input data-custom-link-url type="text" placeholder="/path-or-url" class="input" aria-label="Custom button link URL">
+          <input data-custom-link-class type="text" placeholder="optional-class" class="input" aria-label="Custom button link class">
+          <div class="lexxy-editor__toolbar-dropdown-actions">
+            <button data-custom-link-apply type="button" class="lexxy-editor__toolbar-button">Apply</button>
+            <button data-custom-link-unlink type="button" class="lexxy-editor__toolbar-button">Unlink</button>
+          </div>
+        </div>
+      </lexxy-custom-link-dropdown>
 
       <button class="lexxy-editor__toolbar-button" type="button" name="quote" data-command="insertQuoteBlock" title="Quote">
         ${ToolbarIcons.quote}

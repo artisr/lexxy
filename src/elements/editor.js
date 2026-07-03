@@ -28,10 +28,11 @@ import Contents from "../editor/contents"
 import Clipboard from "../editor/clipboard"
 import Extensions from "../editor/extensions"
 import { BrowserAdapter } from "../editor/adapters/browser_adapter"
-import { getHighlightStyles } from "../helpers/format_helper"
+import { getHighlightStyles, getSelectionStyle } from "../helpers/format_helper"
 import { styleResolverRoot } from "../helpers/style_resolver_root"
 
 import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node"
+import { ClassableLinkNode } from "../nodes/classable_link_node"
 import { exportTextNodeDOM } from "../helpers/text_node_export_helper"
 import { ProvisionalParagraphExtension } from "../extensions/provisional_paragraph_extension"
 import { HighlightExtension } from "../extensions/highlight_extension"
@@ -95,7 +96,7 @@ export class LexicalEditorElement extends HTMLElement {
     this.clipboard = new Clipboard(this)
     this.#disposables.push(this.clipboard)
 
-    this.adapter = new BrowserAdapter()
+    this.adapter = new BrowserAdapter(this)
     this.#uploadRequests = new UploadRequests()
 
     const commandDispatcher = CommandDispatcher.configureFor(this)
@@ -455,6 +456,7 @@ export class LexicalEditorElement extends HTMLElement {
         CodeNode,
         CodeHighlightNode,
         LinkNode,
+        ClassableLinkNode,
         AutoLinkNode,
         HorizontalDividerNode
       )
@@ -765,9 +767,10 @@ export class LexicalEditorElement extends HTMLElement {
 
   #dispatchAttributesChange() {
     let attributes = null
-    let linkHref = null
     let highlight = null
     let headingTag = null
+    let fontSize = null
+    let link = null
 
     this.editor.getEditorState().read(() => {
       const selection = $getSelection()
@@ -776,16 +779,16 @@ export class LexicalEditorElement extends HTMLElement {
       const format = this.selection.getFormat()
       if (Object.keys(format).length === 0) return
 
-      const anchorNode = selection.anchor.getNode()
-      const linkNode = $getNearestNodeOfType(anchorNode, LinkNode)
+      const linkNode = this.#getSelectedLinkNode(selection)
+      highlight = getHighlightStyles(selection)
 
       attributes = {
         bold: { active: format.isBold, enabled: true },
         italic: { active: format.isItalic, enabled: true },
         strikethrough: { active: format.isStrikethrough, enabled: true },
         code: { active: format.isInCode, enabled: true },
-        highlight: { active: format.isHighlight, enabled: true },
-        link: { active: format.isInLink, enabled: true },
+        highlight: { active: format.isHighlight || !!highlight, enabled: true },
+        link: { active: linkNode !== null, enabled: true },
         quote: { active: format.isInQuote, enabled: true },
         heading: { active: format.isInHeading, enabled: true },
         "unordered-list": { active: format.isInList && format.listType === "bullet", enabled: true },
@@ -794,13 +797,17 @@ export class LexicalEditorElement extends HTMLElement {
         redo: { active: false, enabled: this.canRedo }
       }
 
-      linkHref = linkNode ? linkNode.getURL() : null
-      highlight = format.isHighlight ? getHighlightStyles(selection) : null
+      if (linkNode) {
+        link = { href: linkNode.getURL() }
+        const className = linkNode.getClassName?.()
+        if (className) link.className = className
+      }
       headingTag = format.headingTag ?? null
+      fontSize = getSelectionStyle(selection, "font-size")
     })
 
     if (attributes) {
-      this.adapter.dispatchAttributesChange(attributes, linkHref, highlight, headingTag)
+      this.adapter.dispatchAttributesChange(attributes, link, highlight, headingTag, fontSize)
     }
   }
 
@@ -826,6 +833,20 @@ export class LexicalEditorElement extends HTMLElement {
         this.#dispatchEditorInitialized()
       }
     }
+  }
+
+  #getSelectedLinkNode(selection) {
+    if (selection.isCollapsed()) {
+      return $getNearestNodeOfType(selection.anchor.getNode(), LinkNode)
+    }
+
+    const linkNodes = new Set()
+    for (const node of selection.getNodes()) {
+      if (!$isTextNode(node)) continue
+      linkNodes.add($getNearestNodeOfType(node, LinkNode))
+    }
+
+    return linkNodes.size === 1 ? Array.from(linkNodes)[0] : null
   }
 
   get #resolvedHighlightColors() {

@@ -524,6 +524,15 @@
       }
     }
 
+    .lexxy-editor__toolbar-text-icon {
+      align-items: center;
+      display: inline-flex;
+      font-size: 0.75rem;
+      font-weight: 700;
+      justify-content: center;
+      min-inline-size: 1.35rem;
+    }
+
     &.lexxy-editor__toolbar-group-end {
       position: relative;
       margin-inline-end: calc(var(--lexxy-toolbar-spacing) + 1px);
@@ -663,6 +672,101 @@
         grid-column: 1 / -1;
       }
     }
+  }
+
+  .lexxy-editor__toolbar-dropdown-actions {
+    display: flex;
+    gap: var(--lexxy-toolbar-spacing);
+
+    button {
+      background-color: var(--lexxy-color-ink-lightest);
+      flex: 1;
+      padding-inline: 2ch;
+    }
+  }
+
+  &.lexxy-editor__toolbar-dropdown--style,
+  &.lexxy-editor__toolbar-dropdown--input {
+    position: relative;
+
+    [overflowing] & {
+      position: static;
+    }
+  }
+
+  &.lexxy-editor__toolbar-dropdown--style {
+    .lexxy-editor__toolbar-style-panel {
+      align-items: stretch;
+      border-start-start-radius: 0;
+      flex-direction: column;
+      font-size: var(--lexxy-text-small);
+      gap: var(--lexxy-toolbar-spacing);
+      inset-inline-start: 0;
+      min-inline-size: 20rem;
+
+      [overflowing] & {
+        border-start-start-radius: calc(var(--lexxy-radius) + var(--lexxy-toolbar-gap));
+        inset-inline-end: var(--lexxy-toolbar-spacing);
+        inset-inline-start: var(--lexxy-toolbar-spacing);
+      }
+    }
+  }
+
+  &.lexxy-editor__toolbar-dropdown--input {
+    .lexxy-editor__toolbar-input-panel {
+      align-items: stretch;
+      flex-direction: column;
+      font-size: var(--lexxy-text-small);
+      gap: var(--lexxy-toolbar-spacing);
+      inset-inline-start: var(--lexxy-toolbar-spacing);
+      min-inline-size: 17rem;
+
+      [overflowing] & {
+        border-start-start-radius: calc(var(--lexxy-radius) + var(--lexxy-toolbar-gap));
+        inset-inline-end: var(--lexxy-toolbar-spacing);
+        inset-inline-start: var(--lexxy-toolbar-spacing);
+        min-inline-size: 0;
+      }
+
+      &.lexxy-editor__toolbar-input-panel--wide {
+        min-inline-size: 20rem;
+      }
+    }
+  }
+
+  .lexxy-editor__toolbar-color-field {
+    align-items: center;
+    display: flex;
+    gap: var(--lexxy-toolbar-gap);
+
+    input[type="color"] {
+      appearance: none;
+      background: none;
+      border: 1px solid var(--lexxy-color-ink-lighter);
+      border-radius: var(--lexxy-radius);
+      block-size: var(--lexxy-toolbar-button-size);
+      flex: 0 0 var(--lexxy-toolbar-button-size);
+      inline-size: var(--lexxy-toolbar-button-size);
+      padding: 2px;
+    }
+  }
+
+  .lexxy-editor__toolbar-color-field .input,
+  .lexxy-editor__toolbar-input-panel .input {
+    background-color: var(--lexxy-color-canvas);
+    border: 1px solid var(--lexxy-color-ink-lighter);
+    border-radius: var(--lexxy-radius);
+    box-sizing: border-box;
+    color: var(--lexxy-color-text);
+    font-size: var(--lexxy-text-small);
+    min-block-size: var(--lexxy-toolbar-button-size);
+    min-inline-size: 0;
+    padding-block: 0;
+    padding-inline: 1ch;
+  }
+
+  .lexxy-editor__toolbar-color-field .input {
+    flex: 1 1 auto;
   }
 
 

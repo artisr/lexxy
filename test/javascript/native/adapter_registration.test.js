@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "vitest"
-import { createTestEditor, destroyTestEditor, selectAll, setContent, tick } from "../unit/helpers/editor_helper"
+import { captureEvent, createTestEditor, destroyTestEditor, selectAll, setContent, tick } from "../unit/helpers/editor_helper"
 import { BrowserAdapter } from "../../../src/editor/adapters/browser_adapter"
 
 let editorElement
@@ -13,6 +13,30 @@ describe("adapter registration", () => {
     editorElement = await createTestEditor()
 
     expect(editorElement.adapter).toBeInstanceOf(BrowserAdapter)
+  })
+
+  test("default BrowserAdapter dispatches initialized event", async () => {
+    editorElement = await createTestEditor()
+
+    const event = await captureEvent(editorElement, "lexxy:editor-initialized", () => {
+      editorElement.dispatchEditorInitialized()
+    })
+
+    expect(event.detail).toHaveProperty("highlightColors")
+    expect(event.detail).toHaveProperty("headingFormats")
+  })
+
+  test("default BrowserAdapter dispatches attributes event with link classes", async () => {
+    editorElement = await createTestEditor()
+    await setContent(editorElement, '<p><a href="/start" class="custom-button hero">Start</a></p>')
+    selectAll(editorElement)
+
+    const event = await captureEvent(editorElement, "lexxy:attributes-change", () => {
+      editorElement.dispatchAttributesChange()
+    })
+
+    expect(event.detail.attributes.link.active).toBe(true)
+    expect(event.detail.link).toEqual({ href: "/start", className: "custom-button hero" })
   })
 
   test("registerAdapter replaces the default adapter", async () => {

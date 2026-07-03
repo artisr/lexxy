@@ -15,11 +15,10 @@ export class LinkDropdown extends ToolbarDropdown {
 
   onOpen() {
     this.input.value = this.#selectedLinkUrl
-    this.input.required = true
   }
 
   onClose() {
-    this.input.required = false
+    this.input.setCustomValidity("")
   }
 
   get linkButton() {
@@ -39,6 +38,12 @@ export class LinkDropdown extends ToolbarDropdown {
   }
 
   #handleLink = () => {
+    if (this.input.value.trim() === "") {
+      this.input.setCustomValidity("Enter a URL.")
+    } else {
+      this.input.setCustomValidity("")
+    }
+
     if (!this.input.checkValidity()) {
       this.input.reportValidity()
       return

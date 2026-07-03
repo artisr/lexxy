@@ -15,8 +15,7 @@ test.describe("Prompt dismissal when the cursor moves away from the trigger", ()
     const popover = page.locator(".lexxy-prompt-menu--visible")
     await expect(popover).toBeVisible({ timeout: 5_000 })
 
-    await page.keyboard.press("End")
-    await editor.flush()
+    await editor.send("End")
 
     await expect(popover).toHaveCount(0)
   })

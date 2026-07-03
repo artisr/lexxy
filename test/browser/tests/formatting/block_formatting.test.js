@@ -491,6 +491,41 @@ test.describe("Block formatting", () => {
     expect(submitCount).toBe(0)
   })
 
+  test("closed link dialog does not leave a hidden required input in the form", async ({
+    page,
+    editor,
+  }) => {
+    await page.evaluate(() => {
+      window.__invalidControls = []
+      document.addEventListener("invalid", (event) => {
+        window.__invalidControls.push({
+          tagName: event.target.tagName,
+          type: event.target.type,
+          hidden: !!event.target.closest("[hidden]"),
+        })
+      }, true)
+    })
+
+    await editor.setValue(HELLO_EVERYONE)
+    await editor.select("everyone")
+    await editor.flush()
+
+    await openToolbarDropdown(page, "link")
+
+    const input = page.locator("lexxy-link-dropdown [data-dropdown-panel] input[type='url']").first()
+    await expect(input).toBeVisible({ timeout: 2_000 })
+    await expect(input).toHaveJSProperty("required", false)
+
+    await page.keyboard.press("Escape")
+    await expect(input).toBeHidden()
+
+    const isFormValid = await page.evaluate(() => document.querySelector("form").checkValidity())
+    const invalidControls = await page.evaluate(() => window.__invalidControls)
+
+    expect(isFormValid).toBe(true)
+    expect(invalidControls).toEqual([])
+  })
+
   test("link dialog shows existing URL when link is selected", async ({
     page,
     editor,

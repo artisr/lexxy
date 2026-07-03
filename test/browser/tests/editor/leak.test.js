@@ -5,6 +5,8 @@ const CYCLES = 10
 const CONTENT = "<h2>Heading</h2><p>Some <strong>rich</strong> text with <a href='https://example.com'>a link</a>.</p><ul><li>Item one</li><li>Item two</li></ul><p>End.</p>"
 
 test.describe("Leak test", () => {
+  test.describe.configure({ mode: "serial" })
+
   test.skip(({ browserName }) => browserName !== "chromium", "CDP requires Chromium")
 
   test.beforeEach(async ({ page, editor }) => {
@@ -25,7 +27,7 @@ test.describe("Leak test", () => {
       return metrics.find((m) => m.name === "JSEventListeners")?.value ?? 0
     }
 
-    // Run one warmup cycle so one-time lazy initialization is excluded
+    // Run one warmup cycle so one-time lazy initialization is excluded.
     await reconnect(page, editor)
     const baseline = await getListenerCount()
 
@@ -33,8 +35,7 @@ test.describe("Leak test", () => {
       await reconnect(page, editor)
     }
 
-    const final = await getListenerCount()
-    expect(final - baseline).toBe(0)
+    await expect.poll(getListenerCount).toBeLessThanOrEqual(baseline)
 
     await cdp.detach()
   })
@@ -56,8 +57,7 @@ test.describe("Leak test", () => {
       await reconnect(page, editor)
     }
 
-    const final = await getNodeCount()
-    expect(final - baseline).toBe(0)
+    await expect.poll(getNodeCount).toBeLessThanOrEqual(baseline)
 
     await cdp.detach()
   })

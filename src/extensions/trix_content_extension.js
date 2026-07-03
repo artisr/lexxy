@@ -44,7 +44,7 @@ export class TrixContentExtension extends LexxyExtension {
 }
 
 function onlyStyledElements(element, conversion) {
-  const elementHighlighted = element.style.color !== "" || element.style.backgroundColor !== ""
+  const elementHighlighted = element.style.color !== "" || element.style.backgroundColor !== "" || element.style.fontSize !== ""
   return elementHighlighted ? conversion : null
 }
 
