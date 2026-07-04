@@ -42,6 +42,34 @@ test.describe("Block formatting", () => {
     await assertEditorHtml(editor, "<p>Hello everyone</p>")
   })
 
+  test("align paragraphs", async ({ page, editor }) => {
+    const alignments = [
+      [ "alignLeft", "align-left", "left" ],
+      [ "alignCenter", "align-center", "center" ],
+      [ "alignRight", "align-right", "right" ],
+      [ "alignJustify", "align-justify", "justify" ],
+    ]
+
+    for (const [ command, buttonName, alignment ] of alignments) {
+      await editor.setValue(HELLO_EVERYONE)
+      await editor.select("everyone")
+
+      await clickToolbarButton(page, command)
+
+      await assertEditorHtml(editor, `<p style="text-align: ${alignment};">Hello everyone</p>`)
+      await expect(page.locator(`lexxy-toolbar button[name='${buttonName}']`)).toHaveAttribute("aria-pressed", "true")
+    }
+  })
+
+  test("align multiple selected paragraphs", async ({ page, editor }) => {
+    await editor.setValue("<p>Alpha</p><p>Bravo</p>")
+    await editor.selectAll()
+
+    await clickToolbarButton(page, "alignCenter")
+
+    await assertEditorHtml(editor, '<p style="text-align: center;">Alpha</p><p style="text-align: center;">Bravo</p>')
+  })
+
   test("bullet list", async ({ page, editor }) => {
     await editor.setValue(HELLO_EVERYONE)
     await editor.select("everyone")

@@ -224,7 +224,7 @@ export class LexicalToolbarElement extends HTMLElement {
     if (!anchorNode.getParent()) { return }
 
     const { isBold, isItalic, isStrikethrough, isUnderline, isHighlight, isInLink, isInQuote, isInHeading,
-      headingTag, isInCode, isInList, listType, isInTable } = this.selection.getFormat()
+      alignment, headingTag, isInCode, isInList, listType, isInTable } = this.selection.getFormat()
 
     this.#setButtonPressed("bold", isBold)
     this.#setButtonPressed("italic", isItalic)
@@ -239,6 +239,11 @@ export class LexicalToolbarElement extends HTMLElement {
     this.#setButtonPressed("heading-4", headingTag === "h4")
     this.#setButtonPressed("heading-5", headingTag === "h5")
     this.#setButtonPressed("heading-6", headingTag === "h6")
+
+    this.#setButtonPressed("align-left", alignment === "left")
+    this.#setButtonPressed("align-center", alignment === "center")
+    this.#setButtonPressed("align-right", alignment === "right")
+    this.#setButtonPressed("align-justify", alignment === "justify")
 
     this.#setButtonPressed("lists", isInList)
     this.#setButtonPressed("unordered-list", isInList && listType === "bullet")
@@ -285,6 +290,7 @@ export class LexicalToolbarElement extends HTMLElement {
 
   #refreshOverflow() {
     this.#hideOverflowMenuButton()
+    this.#positionNewToolbarItems()
     this.#resetToolbarOverflow()
     this.#reindexToolbarItems()
     this.#compactMenu()
@@ -296,14 +302,31 @@ export class LexicalToolbarElement extends HTMLElement {
     this.#showOverflowMenuButton(isOverflowing)
   }
 
+  #positionNewToolbarItems() {
+    let nextPosition = Math.max(
+      -1,
+      ...[ ...this.#toolbarItems, ...this.#overflowMenuItems ].map((item) => this.#itemPosition(item))
+    ) + 1
+
+    for (const item of this.#toolbarItems) {
+      if (item.dataset.position == null) {
+        item.dataset.position = nextPosition.toString()
+        nextPosition++
+      }
+    }
+  }
+
   #resetToolbarOverflow() {
-    const items = Array.from(this.#overflowMenuDropdown.children)
-    items.sort((a, b) => this.#itemPosition(b) - this.#itemPosition(a))
+    for (const item of this.#overflowMenuItems) {
+      item.removeAttribute("role")
+      this.insertBefore(item, this.#overflowMenuButton)
+    }
+
+    const items = this.#toolbarItems
+    items.sort((a, b) => this.#itemPosition(a) - this.#itemPosition(b))
 
     for (const item of items) {
-      const nextItem = this.querySelector(`[data-position="${this.#itemPosition(item) + 1}"]`) ?? this.#overflowMenuButton
-      item.removeAttribute("role")
-      this.insertBefore(item, nextItem)
+      this.insertBefore(item, this.#overflowMenuButton)
     }
   }
 
@@ -375,6 +398,10 @@ export class LexicalToolbarElement extends HTMLElement {
 
   get #overflowMenuDropdown() {
     return this.#overflowMenuButton?.querySelector(":scope > [data-dropdown-panel]")
+  }
+
+  get #overflowMenuItems() {
+    return Array.from(this.#overflowMenuDropdown.children)
   }
 
   get #overflowableItems() {
@@ -545,6 +572,22 @@ export class LexicalToolbarElement extends HTMLElement {
       </button>
       <button class="lexxy-editor__toolbar-button lexxy-editor__toolbar-group-end" type="button" name="ordered-list" data-command="insertOrderedList" title="Numbered list">
         ${ToolbarIcons.ol}
+      </button>
+
+      <button class="lexxy-editor__toolbar-button" type="button" name="align-left" data-command="alignLeft" title="Align left">
+        ${ToolbarIcons.alignLeft}
+      </button>
+
+      <button class="lexxy-editor__toolbar-button" type="button" name="align-center" data-command="alignCenter" title="Align center">
+        ${ToolbarIcons.alignCenter}
+      </button>
+
+      <button class="lexxy-editor__toolbar-button" type="button" name="align-right" data-command="alignRight" title="Align right">
+        ${ToolbarIcons.alignRight}
+      </button>
+
+      <button class="lexxy-editor__toolbar-button lexxy-editor__toolbar-group-end" type="button" name="align-justify" data-command="alignJustify" title="Justify">
+        ${ToolbarIcons.alignJustify}
       </button>
 
       <button class="lexxy-editor__toolbar-button" type="button" name="table" data-command="insertTable" title="Insert a table">

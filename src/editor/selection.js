@@ -3,7 +3,7 @@ import {
   $isLineBreakNode, $isNodeSelection, $isRangeSelection, $isTextNode, $setSelection, CLICK_COMMAND, COMMAND_PRIORITY_LOW, DELETE_CHARACTER_COMMAND,
   HISTORY_MERGE_TAG, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, SELECTION_CHANGE_COMMAND, isDOMNode
 } from "lexical"
-import { $getNearestNodeOfType } from "@lexical/utils"
+import { $findMatchingParent, $getNearestNodeOfType } from "@lexical/utils"
 import { $getListDepth, ListItemNode, ListNode } from "@lexical/list"
 import { $getTableCellNodeFromLexicalNode, TableCellNode } from "@lexical/table"
 import { CodeNode } from "@lexical/code"
@@ -107,6 +107,7 @@ export default class Selection {
       isInQuote: $isQuoteNode(topLevelElement),
       isInHeading: headingNode !== null,
       isInCode: this.#isInCode(selection, anchorNode),
+      alignment: this.#getNearestBlockElementFormat(anchorNode),
       headingTag: headingNode?.getTag() ?? null,
       isInList: listType !== null,
       listType,
@@ -280,6 +281,17 @@ export default class Selection {
     if (!selection.hasFormat("code")) return false
 
     return $isTextNode(anchorNode) && anchorNode.hasFormat("code")
+  }
+
+  #getNearestBlockElementFormat(node) {
+    let blockElement
+    if ($isElementNode(node) && !node.isInline()) {
+      blockElement = node
+    } else {
+      blockElement = $findMatchingParent(node, parentNode => $isElementNode(parentNode) && !parentNode.isInline())
+    }
+
+    return blockElement?.getFormatType() || null
   }
 
   #getSelectedLinkNode(selection) {

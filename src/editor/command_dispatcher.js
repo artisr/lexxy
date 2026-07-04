@@ -6,6 +6,7 @@ import {
   $setSelection,
   COMMAND_PRIORITY_HIGH,
   COMMAND_PRIORITY_NORMAL,
+  FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   INDENT_CONTENT_COMMAND,
   INSERT_LINE_BREAK_COMMAND,
@@ -49,6 +50,10 @@ const COMMANDS = [
   "setFormatHeadingSmall",
   "setFormatParagraph",
   "clearFormatting",
+  "alignLeft",
+  "alignCenter",
+  "alignRight",
+  "alignJustify",
   "insertUnorderedList",
   "insertOrderedList",
   "insertQuoteBlock",
@@ -336,6 +341,22 @@ export class CommandDispatcher {
 
   dispatchClearFormatting() {
     this.contents.clearFormatting()
+  }
+
+  dispatchAlignLeft() {
+    this.editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "left")
+  }
+
+  dispatchAlignCenter() {
+    this.editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "center")
+  }
+
+  dispatchAlignRight() {
+    this.editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "right")
+  }
+
+  dispatchAlignJustify() {
+    this.editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "justify")
   }
 
   dispatchUploadImage() {

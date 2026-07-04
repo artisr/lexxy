@@ -20,8 +20,9 @@ describe("attributes change event", () => {
 
     const expectedKeys = [
       "bold", "italic", "strikethrough", "code", "highlight",
-      "link", "quote", "heading", "unordered-list", "ordered-list",
-      "undo", "redo"
+      "link", "quote", "heading",
+      "align-left", "align-center", "align-right", "align-justify",
+      "unordered-list", "ordered-list", "undo", "redo"
     ]
 
     expect(Object.keys(event.detail.attributes).sort()).toEqual(expectedKeys.sort())
@@ -60,8 +61,13 @@ describe("attributes change event", () => {
     expect(event.detail.attributes.link).toEqual({ active: false, enabled: true })
     expect(event.detail.attributes.quote).toEqual({ active: false, enabled: true })
     expect(event.detail.attributes.heading).toEqual({ active: false, enabled: true })
+    expect(event.detail.attributes["align-left"]).toEqual({ active: false, enabled: true })
+    expect(event.detail.attributes["align-center"]).toEqual({ active: false, enabled: true })
+    expect(event.detail.attributes["align-right"]).toEqual({ active: false, enabled: true })
+    expect(event.detail.attributes["align-justify"]).toEqual({ active: false, enabled: true })
     expect(event.detail.attributes["unordered-list"]).toEqual({ active: false, enabled: true })
     expect(event.detail.attributes["ordered-list"]).toEqual({ active: false, enabled: true })
+    expect(event.detail.alignment).toBeNull()
   })
 
   test("reports link as active with href when cursor is inside a link", async () => {
@@ -250,6 +256,35 @@ describe("attributes change event", () => {
     expect(event.detail.headingTag).toBe("h2")
   })
 
+  test("reports block alignment for the current selection", async () => {
+    editorElement = await createTestEditorWithNativeAdapter()
+    await setContent(editorElement, '<p style="text-align: right;">hello world</p>')
+    selectAll(editorElement)
+
+    const event = await captureEvent(editorElement, "lexxy:attributes-change", () => {
+      editorElement.dispatchAttributesChange()
+    })
+
+    expect(event.detail.attributes["align-right"]).toEqual({ active: true, enabled: true })
+    expect(event.detail.attributes["align-left"]).toEqual({ active: false, enabled: true })
+    expect(event.detail.alignment).toBe("right")
+  })
+
+  test("alignment survives export and can be changed", async () => {
+    editorElement = await createTestEditorWithNativeAdapter()
+    await setContent(editorElement, "<p>hello world</p>")
+    selectAll(editorElement)
+
+    dispatchToolbarCommand(editorElement, "alignJustify")
+    await tick()
+    expect(editorElement.value).toContain("text-align: justify")
+
+    dispatchToolbarCommand(editorElement, "alignCenter")
+    await tick()
+    expect(editorElement.value).toContain("text-align: center")
+    expect(editorElement.value).not.toContain("text-align: justify")
+  })
+
   test("includes undo/redo state", async () => {
     editorElement = await createTestEditorWithNativeAdapter()
     await setContent(editorElement, "<p>hello</p>")
@@ -298,8 +333,9 @@ describe("attributes change event", () => {
 
   test("sanitization keeps supported styles and strips unsupported style properties", async () => {
     editorElement = await createTestEditorWithNativeAdapter()
-    await setContent(editorElement, '<p><span style="font-size: 14px; color: red; background-color: yellow; font-weight: 700;">Styled</span></p>')
+    await setContent(editorElement, '<p style="text-align: center;"><span style="font-size: 14px; color: red; background-color: yellow; font-weight: 700;">Styled</span></p>')
 
+    expect(editorElement.value).toContain("text-align: center")
     expect(editorElement.value).toContain("font-size: 14px")
     expect(editorElement.value).toContain("color: red")
     expect(editorElement.value).toContain("background-color: yellow")

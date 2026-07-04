@@ -11,13 +11,14 @@ export class NativeAdapter {
     this.editorContentElement = editorElement.editorContentElement
   }
 
-  dispatchAttributesChange(attributes, link, highlight, headingTag, fontSize) {
+  dispatchAttributesChange(attributes, link, highlight, headingTag, fontSize, alignment) {
     dispatch(this.editorElement, "lexxy:attributes-change", {
       attributes,
       link: typeof link === "string" ? { href: link } : link,
       highlight,
       headingTag,
-      fontSize
+      fontSize,
+      alignment
     })
   }
 

@@ -770,6 +770,7 @@ export class LexicalEditorElement extends HTMLElement {
     let highlight = null
     let headingTag = null
     let fontSize = null
+    let alignment = null
     let link = null
 
     this.editor.getEditorState().read(() => {
@@ -791,6 +792,10 @@ export class LexicalEditorElement extends HTMLElement {
         link: { active: linkNode !== null, enabled: true },
         quote: { active: format.isInQuote, enabled: true },
         heading: { active: format.isInHeading, enabled: true },
+        "align-left": { active: format.alignment === "left", enabled: true },
+        "align-center": { active: format.alignment === "center", enabled: true },
+        "align-right": { active: format.alignment === "right", enabled: true },
+        "align-justify": { active: format.alignment === "justify", enabled: true },
         "unordered-list": { active: format.isInList && format.listType === "bullet", enabled: true },
         "ordered-list": { active: format.isInList && format.listType === "number", enabled: true },
         undo: { active: false, enabled: this.canUndo },
@@ -804,10 +809,11 @@ export class LexicalEditorElement extends HTMLElement {
       }
       headingTag = format.headingTag ?? null
       fontSize = getSelectionStyle(selection, "font-size")
+      alignment = format.alignment || null
     })
 
     if (attributes) {
-      this.adapter.dispatchAttributesChange(attributes, link, highlight, headingTag, fontSize)
+      this.adapter.dispatchAttributesChange(attributes, link, highlight, headingTag, fontSize, alignment)
     }
   }
 
