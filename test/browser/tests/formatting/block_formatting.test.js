@@ -485,7 +485,7 @@ test.describe("Block formatting", () => {
 
     await openToolbarDropdown(page, "link")
 
-    const input = page.locator("lexxy-link-dropdown [data-dropdown-panel] input[type='url']").first()
+    const input = linkUrlInput(page)
     await expect(input).toBeVisible({ timeout: 2_000 })
     await input.fill("https://37signals.com")
     await page
@@ -496,6 +496,28 @@ test.describe("Block formatting", () => {
     await assertEditorHtml(
       editor,
       '<p>Hello <a href="https://37signals.com">everyone</a></p>',
+    )
+  })
+
+  test("links to relative URLs", async ({ page, editor }) => {
+    await editor.setValue(HELLO_EVERYONE)
+    await editor.select("everyone")
+    await editor.flush()
+
+    await openToolbarDropdown(page, "link")
+
+    const input = linkUrlInput(page)
+    await expect(input).toBeVisible({ timeout: 2_000 })
+    await expect(input).toHaveAttribute("type", "text")
+    await input.fill("/projects/1")
+    await page
+      .locator("lexxy-link-dropdown [data-dropdown-panel] button[value='link']")
+      .first()
+      .click()
+
+    await assertEditorHtml(
+      editor,
+      '<p>Hello <a href="/projects/1">everyone</a></p>',
     )
   })
 
@@ -517,7 +539,7 @@ test.describe("Block formatting", () => {
 
     await openToolbarDropdown(page, "link")
 
-    const input = page.locator("lexxy-link-dropdown [data-dropdown-panel] input[type='url']").first()
+    const input = linkUrlInput(page)
     await expect(input).toBeVisible({ timeout: 2_000 })
     await input.fill("https://37signals.com")
     await input.press("Enter")
@@ -552,7 +574,7 @@ test.describe("Block formatting", () => {
 
     await openToolbarDropdown(page, "link")
 
-    const input = page.locator("lexxy-link-dropdown [data-dropdown-panel] input[type='url']").first()
+    const input = linkUrlInput(page)
     await expect(input).toBeVisible({ timeout: 2_000 })
     await expect(input).toHaveJSProperty("required", false)
 
@@ -578,7 +600,7 @@ test.describe("Block formatting", () => {
 
     await openToolbarDropdown(page, "link")
 
-    const input = page.locator("lexxy-link-dropdown [data-dropdown-panel] input[type='url']").first()
+    const input = linkUrlInput(page)
     await expect(input).toBeVisible({ timeout: 2_000 })
     await expect(input).toHaveValue("https://37signals.com")
   })
@@ -593,11 +615,15 @@ test.describe("Block formatting", () => {
 
     await openToolbarDropdown(page, "link")
 
-    const input = page.locator("lexxy-link-dropdown [data-dropdown-panel] input[type='url']").first()
+    const input = linkUrlInput(page)
     await expect(input).toBeVisible({ timeout: 2_000 })
     await expect(input).toHaveValue("")
   })
 })
+
+function linkUrlInput(page) {
+  return page.locator("lexxy-link-dropdown [data-dropdown-panel] [data-link-url]").first()
+}
 
 test.describe("Blockquote selection matrix", () => {
   test.beforeEach(async ({ page }) => {

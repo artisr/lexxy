@@ -4,7 +4,7 @@ import { registerEventListener } from "../../helpers/listener_helper"
 
 export class LinkDropdown extends ToolbarDropdown {
   editorReady() {
-    this.input = this.panel.querySelector("input")
+    this.input = this.panel.querySelector("[data-link-url]")
 
     this.track(
       registerEventListener(this.input, "keydown", this.#handleEnter),

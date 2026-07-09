@@ -537,7 +537,7 @@ export class LexicalToolbarElement extends HTMLElement {
           ${ToolbarIcons.link}
         </button>
         <div data-dropdown-panel role="dialog" aria-label="Link" hidden>
-          <input type="url" placeholder="Enter a URL…" class="input" id="${linkInputId}">
+          <input data-link-url type="text" placeholder="Enter a URL…" class="input" id="${linkInputId}">
           <div class="lexxy-editor__toolbar-dropdown-actions">
             <button type="button" class="lexxy-editor__toolbar-button" value="link">Link</button>
             <button type="button" class="lexxy-editor__toolbar-button" value="unlink">Unlink</button>
