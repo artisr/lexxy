@@ -44,6 +44,7 @@ import { FormatEscapeExtension } from "../extensions/format_escape_extension.js"
 import { LinkOpenerExtension } from "../extensions/link_opener_extension.js"
 import { PreventLexicalTripleClickExtension } from "../extensions/prevent_lexical_triple_click_extension.js"
 import { CustomAttachmentDragAndDropExtension } from "../extensions/custom_attachment_drag_and_drop_extension.js"
+import { ToggleMarkersExtension } from "../extensions/toggle_markers_extension.js"
 import { nextFrame } from "../helpers/timing_helper.js"
 
 
@@ -204,7 +205,8 @@ export class LexicalEditorElement extends HTMLElement {
       FormatEscapeExtension,
       LinkOpenerExtension,
       PreventLexicalTripleClickExtension,
-      CustomAttachmentDragAndDropExtension
+      CustomAttachmentDragAndDropExtension,
+      ToggleMarkersExtension
     ]
   }
 

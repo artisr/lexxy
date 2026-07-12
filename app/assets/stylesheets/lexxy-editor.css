@@ -433,6 +433,30 @@
      invalidating ancestor-dependent selectors and sibling layout elsewhere
      in the editor. */
   contain: layout style;
+
+  > :is([data-lexxy-toggle], [data-lexxy-toggle-target]) {
+    border: 1px dashed var(--lexxy-color-selected-dark);
+    border-radius: var(--lexxy-radius);
+    margin-block: var(--lexxy-content-margin);
+    padding: var(--lexxy-editor-padding);
+
+    &:before {
+      color: var(--lexxy-color-text-subtle);
+      display: block;
+      font-size: var(--lexxy-text-small);
+      font-weight: 600;
+      margin-block-end: var(--lexxy-toolbar-spacing);
+      pointer-events: none;
+    }
+  }
+
+  > [data-lexxy-toggle]:before {
+    content: "Toggle: " attr(data-lexxy-toggle);
+  }
+
+  > [data-lexxy-toggle-target]:before {
+    content: "Target: " attr(data-lexxy-toggle-target);
+  }
 }
 
 :where(.lexxy-editor--drag-over) {

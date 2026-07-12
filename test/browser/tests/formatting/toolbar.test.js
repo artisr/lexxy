@@ -103,6 +103,7 @@ test.describe("Toolbar", () => {
 
     // Shrink the viewport until the toolbar overflows
     const originalSize = page.viewportSize()
+    const originallyOverflowing = await toolbar.getAttribute("overflowing") !== null
     await page.setViewportSize({ width: 300, height: originalSize.height })
 
     // Wait for the toolbar to enter overflow state
@@ -124,7 +125,28 @@ test.describe("Toolbar", () => {
 
     // Restore viewport and verify overflow is resolved
     await page.setViewportSize(originalSize)
-    await expect(toolbar).not.toHaveAttribute("overflowing")
+    await assertOverflowState(toolbar, originallyOverflowing)
+  })
+
+  test("overflow compaction moves toggle markers before existing controls", async ({ page }) => {
+    const toolbar = page.locator("lexxy-toolbar")
+    const overflowMenu = toolbar.locator(".lexxy-editor__toolbar-overflow-menu")
+    const originalSize = page.viewportSize()
+    const originallyOverflowing = await toolbar.getAttribute("overflowing") !== null
+
+    let markerOverflowed = false
+    for (let width = originalSize.width; width >= 300 && !markerOverflowed; width -= 50) {
+      await page.setViewportSize({ width, height: originalSize.height })
+      await toolbar.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)))
+      markerOverflowed = await overflowMenu.locator("[name='toggle'], [name='toggle-target']").count() > 0
+    }
+
+    expect(markerOverflowed).toBe(true)
+    await expect(toolbar.locator(":scope > button[name='undo']")).toBeVisible()
+    await expect(toolbar.locator(":scope > button[name='redo']")).toBeVisible()
+
+    await page.setViewportSize(originalSize)
+    await assertOverflowState(toolbar, originallyOverflowing)
   })
 
   test("requestOverflowRefresh() recalculates after a toolbar button is injected asynchronously", async ({ page }) => {
@@ -132,6 +154,7 @@ test.describe("Toolbar", () => {
     const overflowMenu = toolbar.locator(".lexxy-editor__toolbar-overflow-menu")
 
     const originalSize = page.viewportSize()
+    const originallyOverflowing = await toolbar.getAttribute("overflowing") !== null
     await page.setViewportSize({ width: 300, height: originalSize.height })
     await expect(toolbar).toHaveAttribute("overflowing", "")
 
@@ -160,7 +183,7 @@ test.describe("Toolbar", () => {
 
     // Restoring viewport pulls it back to the toolbar.
     await page.setViewportSize(originalSize)
-    await expect(toolbar).not.toHaveAttribute("overflowing")
+    await assertOverflowState(toolbar, originallyOverflowing)
     await expect(overflowMenu.locator("button[name='async-injected']")).toHaveCount(0)
     await expect(toolbar.locator(":scope > button[name='async-injected']")).toHaveCount(1)
   })
@@ -261,3 +284,11 @@ test.describe("Toolbar", () => {
     ).toBeVisible()
   })
 })
+
+async function assertOverflowState(toolbar, expected) {
+  if (expected) {
+    await expect(toolbar).toHaveAttribute("overflowing", "")
+  } else {
+    await expect(toolbar).not.toHaveAttribute("overflowing")
+  }
+}

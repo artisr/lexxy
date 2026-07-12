@@ -95,7 +95,7 @@ export class LexicalToolbarElement extends HTMLElement {
 
   closeDropdowns({ except } = {}) {
     this.#dropdowns.forEach((dropdown) => {
-      if (dropdown !== except) {
+      if (dropdown !== except && !dropdown.contains(except)) {
         dropdown.close({ focusEditor: false })
       }
     })
@@ -261,6 +261,7 @@ export class LexicalToolbarElement extends HTMLElement {
   #syncSelectionDropdowns(selection) {
     this.querySelector("lexxy-font-size-dropdown")?.syncSelection(selection)
     this.querySelectorAll("lexxy-style-dropdown").forEach((dropdown) => dropdown.syncSelection(selection))
+    this.querySelectorAll("lexxy-toggle-marker-dropdown").forEach((dropdown) => dropdown.syncSelection(selection))
 
     this.#customLinkActive = this.querySelector("lexxy-custom-link-dropdown")?.syncSelection(selection) || false
   }
@@ -405,7 +406,8 @@ export class LexicalToolbarElement extends HTMLElement {
   }
 
   get #overflowableItems() {
-    return Array.from(this.querySelectorAll(":scope > :not(.lexxy-editor__toolbar-overflow):not([data-prevent-overflow])"))
+    const items = Array.from(this.querySelectorAll(":scope > :not(.lexxy-editor__toolbar-overflow):not([data-prevent-overflow])"))
+    return items.sort((first, second) => Number(first.hasAttribute("data-overflow-first")) - Number(second.hasAttribute("data-overflow-first")))
   }
 
   get #buttons() {
@@ -558,6 +560,32 @@ export class LexicalToolbarElement extends HTMLElement {
           </div>
         </div>
       </lexxy-custom-link-dropdown>
+
+      <lexxy-toggle-marker-dropdown data-marker-role="toggle" data-overflow-first class="lexxy-editor__toolbar-dropdown lexxy-editor__toolbar-dropdown--input">
+        <button data-dropdown-trigger class="lexxy-editor__toolbar-button lexxy-editor__toolbar-button--chevron" type="button" name="toggle" title="Toggle" aria-haspopup="dialog" aria-expanded="false">
+          <span class="lexxy-editor__toolbar-text-icon">T</span>
+        </button>
+        <div data-dropdown-panel role="dialog" aria-label="Toggle" class="lexxy-editor__toolbar-input-panel" hidden>
+          <input data-toggle-marker-id type="text" placeholder="Pair ID" class="input" aria-label="Toggle pair ID">
+          <div class="lexxy-editor__toolbar-dropdown-actions">
+            <button data-toggle-marker-apply type="button" class="lexxy-editor__toolbar-button">Apply</button>
+            <button data-toggle-marker-clear type="button" class="lexxy-editor__toolbar-button">Clear</button>
+          </div>
+        </div>
+      </lexxy-toggle-marker-dropdown>
+
+      <lexxy-toggle-marker-dropdown data-marker-role="target" data-overflow-first class="lexxy-editor__toolbar-dropdown lexxy-editor__toolbar-dropdown--input">
+        <button data-dropdown-trigger class="lexxy-editor__toolbar-button lexxy-editor__toolbar-button--chevron lexxy-editor__toolbar-group-end" type="button" name="toggle-target" title="Toggle target" aria-haspopup="dialog" aria-expanded="false">
+          <span class="lexxy-editor__toolbar-text-icon">Tgt</span>
+        </button>
+        <div data-dropdown-panel role="dialog" aria-label="Toggle target" class="lexxy-editor__toolbar-input-panel" hidden>
+          <input data-toggle-marker-id type="text" placeholder="Pair ID" class="input" aria-label="Toggle target pair ID">
+          <div class="lexxy-editor__toolbar-dropdown-actions">
+            <button data-toggle-marker-apply type="button" class="lexxy-editor__toolbar-button">Apply</button>
+            <button data-toggle-marker-clear type="button" class="lexxy-editor__toolbar-button">Clear</button>
+          </div>
+        </div>
+      </lexxy-toggle-marker-dropdown>
 
       <button class="lexxy-editor__toolbar-button" type="button" name="quote" data-command="insertQuoteBlock" title="Quote">
         ${ToolbarIcons.quote}
